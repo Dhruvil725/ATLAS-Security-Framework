@@ -1,0 +1,16 @@
+# RG-002: AI Bias Monitoring
+control_id: "RG-002"
+control_name: "AI Bias Detection and Monitoring"
+pillar: "Responsible Governance"
+status: "draft"
+
+description: "Monitor AI systems for bias and fairness issues"
+
+implementation:
+  - "Bias detection algorithms"
+  - "Fairness metrics monitoring"
+  - "Regular bias audits"
+
+compliance_mappings:
+  nist_ai_rmf: "MEASURE-2.2"
+  eu_ai_act: "Article 15"

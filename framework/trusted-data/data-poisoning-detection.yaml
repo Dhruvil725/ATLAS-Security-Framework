@@ -1,0 +1,16 @@
+# TD-002: Data Poisoning Detection
+control_id: "TD-002"
+control_name: "Training Data Poisoning Detection"
+pillar: "Trusted Data"
+status: "draft"
+
+description: "Detect malicious data injection in training datasets"
+
+implementation:
+  - "Statistical distribution analysis"
+  - "Outlier detection algorithms"
+  - "Data source verification"
+
+compliance_mappings:
+  nist_ai_rmf: "MAP-2.3"
+  iso_27001: "A.12.2.1"

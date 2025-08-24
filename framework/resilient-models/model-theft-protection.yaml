@@ -1,0 +1,16 @@
+# RM-002: Model Theft Protection
+control_id: "RM-002"
+control_name: "AI Model Theft Protection"
+pillar: "Resilient Models"
+status: "draft"
+
+description: "Protect AI models from extraction, stealing, and unauthorized replication"
+
+implementation:
+  - "Model watermarking techniques"
+  - "Query rate limiting"
+  - "Behavioral monitoring"
+
+compliance_mappings:
+  nist_ai_rmf: "PROTECT-1.1"
+  iso_27001: "A.13.2.1"

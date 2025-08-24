@@ -1,0 +1,16 @@
+# RG-001: AI Risk Assessment
+control_id: "RG-001"
+control_name: "AI System Risk Assessment"
+pillar: "Responsible Governance"
+status: "draft"
+
+description: "Systematic assessment of AI system risks and impact"
+
+implementation:
+  - "Risk identification methodology"
+  - "Impact assessment framework"
+  - "Mitigation strategy development"
+
+compliance_mappings:
+  nist_ai_rmf: "GOVERN-2.1"
+  iso_27001: "A.6.1.1"

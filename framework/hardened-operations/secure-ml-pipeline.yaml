@@ -1,0 +1,28 @@
+# HO-001: Secure ML Pipeline
+control_id: "HO-001"
+control_name: "Secure Machine Learning Pipeline"
+pillar: "Hardened Operations"
+status: "draft"
+
+description: "Implement security controls throughout the ML development and deployment pipeline"
+
+implementation:
+  - "Pipeline access controls"
+  - "Code signing for ML artifacts"
+  - "Secure containerization"
+
+code_example: |
+  ```python
+  def secure_ml_pipeline():
+      # Authenticate user
+      if not authenticate_user():
+          raise AccessDenied("Unauthorized access")
+      
+      # Verify model signature
+      if not verify_model_signature(model_path):
+          raise SecurityError("Model integrity compromised")
+  ```
+
+compliance_mappings:
+  nist_ai_rmf: "PROTECT-2.1"
+  iso_27001: "A.14.1.3"

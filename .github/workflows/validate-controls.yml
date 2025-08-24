@@ -1,0 +1,23 @@
+name: Validate Controls
+
+on:
+  pull_request:
+    paths:
+      - 'framework/**/*.yaml'
+      - 'framework/**/*.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Validate YAML files
+        run: |
+          # Install yaml validator
+          pip install pyyaml
+          
+          # Validate all YAML files
+          find framework/ -name "*.yaml" -o -name "*.yml" | while read file; do
+            python -c "import yaml; yaml.safe_load(open('$file'))" || exit 1
+            echo " $file is valid"
+          done

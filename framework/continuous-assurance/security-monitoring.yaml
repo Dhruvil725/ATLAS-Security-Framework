@@ -1,0 +1,16 @@
+# CA-002: AI Security Monitoring
+control_id: "CA-002"
+control_name: "AI Security Incident Monitoring"
+pillar: "Continuous Assurance"
+status: "draft"
+
+description: "Real-time monitoring for AI security incidents and anomalies"
+
+implementation:
+  - "Anomaly detection systems"
+  - "Security event logging"
+  - "Incident response procedures"
+
+compliance_mappings:
+  nist_ai_rmf: "DETECT-1.1"
+  iso_27001: "A.12.6.1"

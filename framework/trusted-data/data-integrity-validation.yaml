@@ -1,0 +1,25 @@
+# TD-001: Data Integrity Validation
+control_id: "TD-001"
+control_name: "Training Data Integrity Validation"
+pillar: "Trusted Data"
+status: "draft"
+
+description: "Verify integrity and authenticity of training datasets to prevent data tampering"
+
+implementation:
+  - "Implement cryptographic hashing for datasets"
+  - "Monitor for statistical anomalies"
+  - "Establish data lineage tracking"
+
+code_example: |
+  ```python
+  def validate_dataset_integrity(dataset_path):
+      expected_hash = load_dataset_hash(dataset_path)
+      actual_hash = calculate_file_hash(dataset_path)
+      if expected_hash != actual_hash:
+          raise DataIntegrityError("Dataset tampering detected")
+  ```
+
+compliance_mappings:
+  nist_ai_rmf: "GOVERN-1.1"
+  iso_27001: "A.12.6.1"

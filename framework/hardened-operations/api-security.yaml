@@ -1,0 +1,16 @@
+# HO-002: AI API Security Controls
+control_id: "HO-002"
+control_name: "AI API Security Controls"
+pillar: "Hardened Operations"
+status: "draft"
+
+description: "Secure AI service APIs against common attacks and abuse"
+
+implementation:
+  - "Authentication and authorization"
+  - "Rate limiting and throttling"
+  - "Input validation and sanitization"
+
+compliance_mappings:
+  nist_ai_rmf: "PROTECT-1.2"
+  iso_27001: "A.13.1.1"

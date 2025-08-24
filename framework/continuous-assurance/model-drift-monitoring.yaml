@@ -1,0 +1,26 @@
+# CA-001: Model Drift Monitoring
+control_id: "CA-001"
+control_name: "AI Model Drift Monitoring"
+pillar: "Continuous Assurance"
+status: "draft"
+
+description: "Monitor AI models for performance degradation and concept drift"
+
+implementation:
+  - "Performance metric tracking"
+  - "Data distribution monitoring"
+  - "Automated alerting system"
+
+code_example: |
+  ```python
+  def monitor_model_drift(model, new_data, baseline_metrics):
+      current_metrics = evaluate_model(model, new_data)
+      drift_score = calculate_drift(current_metrics, baseline_metrics)
+      
+      if drift_score > DRIFT_THRESHOLD:
+          alert_ops_team("Model drift detected")
+  ```
+
+compliance_mappings:
+  nist_ai_rmf: "MEASURE-1.1"
+  iso_27001: "A.12.1.4"

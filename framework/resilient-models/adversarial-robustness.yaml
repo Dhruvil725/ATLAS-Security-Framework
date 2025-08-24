@@ -1,0 +1,24 @@
+# RM-001: Adversarial Robustness Testing
+control_id: "RM-001"
+control_name: "Adversarial Robustness Testing"
+pillar: "Resilient Models"
+status: "draft"
+
+description: "Test AI models against adversarial attacks and ensure robust performance"
+
+implementation:
+  - "Generate adversarial examples"
+  - "Test model robustness"
+  - "Implement defensive techniques"
+
+code_example: |
+  ```python
+  def test_adversarial_robustness(model, test_data):
+      adversarial_examples = generate_adversarial_examples(test_data)
+      robustness_score = evaluate_model_performance(model, adversarial_examples)
+      return robustness_score > 0.8  # 80% threshold
+  ```
+
+compliance_mappings:
+  nist_ai_rmf: "MEASURE-2.3"
+  iso_27001: "A.14.2.5"
