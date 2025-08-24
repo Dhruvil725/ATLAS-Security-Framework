@@ -66,11 +66,9 @@ ATLAS fills that gap with **actionable security controls** that:
 
 | Use Case | Primary Threats | ATLAS Solution |
 |----------|----------------|----------------|
-| ** Deepfake Detection** | Social engineering, misinformation | Adversarial robustness + data integrity validation |
-| ** Fraud Detection** | Model poisoning, adversarial attacks | Trusted data pipelines + continuous monitoring |
-| ** LLM Applications** | Prompt injection, data extraction | Input validation + responsible governance |
-| ** Medical AI** | Patient privacy, diagnostic manipulation | Privacy-preserving ML + audit frameworks |
-| ** Autonomous Systems** | Safety-critical attacks, sensor spoofing | Hardened operations + resilient models |
+| Deepfake Detection | Social engineering, misinformation | Adversarial robustness + data integrity validation |
+| Fraud Detection | Model poisoning, adversarial attacks | Trusted data pipelines + continuous monitoring |
+| LLM Applications | Prompt injection, data extraction | Input validation + responsible governance |
 
 ##  Quick Start
 
@@ -112,7 +110,6 @@ def validate_training_data(dataset_path):
 - **[Deepfake Detection Security](case-studies/deepfake-detection.md)** - Full implementation walkthrough
 - **[AI Fraud Detection](case-studies/fraud-detection.md)** - Financial services security
 - **[LLM Application Security](case-studies/llm-applications.md)** - Chatbot and assistant protection
-- **[Healthcare AI Security](case-studies/healthcare-ai.md)** - Medical diagnosis system security
 
 ## Contributing
 
