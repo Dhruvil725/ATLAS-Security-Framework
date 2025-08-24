@@ -77,11 +77,14 @@ ATLAS fills that gap with **actionable security controls** that:
 # 1. Clone the framework
 git clone https://github.com/Dhruvil725/ATLAS-Security-Framework.git
 
-# 2. Browse controls by pillar
+# 2. Validate the included controls
+python tools/control-validator.py
+
+# 3.. Browse controls by pillar
 cd framework/resilient-models/
 cat prompt-injection-defense.yaml
 
-# 3. Apply to your AI system
+# 4.. Apply to your AI system
 # Follow implementation guidance in each control
 ```
 
