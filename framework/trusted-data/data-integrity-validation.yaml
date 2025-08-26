@@ -1,25 +1,157 @@
-# TD-001: Data Integrity Validation
-control_id: "TD-001"
-control_name: "Training Data Integrity Validation"
+control_id: "TD-02"
+control_name: "Automated Data Quality Assessment"
 pillar: "Trusted Data"
-status: "draft"
+description: "Continuously monitor and validate data completeness, balance, bias, and statistical properties to ensure high-quality training datasets."
+priority: "HIGH"
+version: "1.0"
+last_updated: "2025-01-26"
 
-description: "Verify integrity and authenticity of training datasets to prevent data tampering"
+threats_addressed:
+  - "Poor data quality affecting model performance"
+  - "Biased datasets leading to discriminatory outcomes"
+  - "Incomplete datasets causing model overfitting"
+  - "Statistical anomalies indicating poisoning attempts"
+  - "Demographic underrepresentation in training data"
 
 implementation:
-  - "Implement cryptographic hashing for datasets"
-  - "Monitor for statistical anomalies"
-  - "Establish data lineage tracking"
+  what: "Establish comprehensive automated data quality monitoring and validation system"
+  how:
+    - "Implement missing value analysis and automated imputation recommendations"
+    - "Deploy bias detection across multiple demographic dimensions"
+    - "Monitor statistical distribution changes over time"
+    - "Perform cross-dataset validation and consistency checking"
+    - "Generate automated data quality reports and alerts"
+  
+  detection_methods:
+    - "Statistical outlier detection using IQR and Z-score methods"
+    - "Demographic parity analysis across protected attributes"
+    - "Distribution shift detection using Kolmogorov-Smirnov tests"
+    - "Correlation analysis for feature interdependencies"
+    - "Missing data pattern analysis"
+  
+  prevention_techniques:
+    - "Automated data validation pipelines"
+    - "Real-time quality monitoring dashboards"
+    - "Threshold-based quality gates in ML pipelines"
+    - "Bias mitigation preprocessing techniques"
+    - "Data augmentation for underrepresented groups"
 
 code_example: |
-  ```python
-  def validate_dataset_integrity(dataset_path):
-      expected_hash = load_dataset_hash(dataset_path)
-      actual_hash = calculate_file_hash(dataset_path)
-      if expected_hash != actual_hash:
-          raise DataIntegrityError("Dataset tampering detected")
-  ```
+  import pandas as pd
+  import numpy as np
+  from scipy import stats
+  from sklearn.preprocessing import StandardScaler
+  from typing import Dict, List, Tuple, Optional
+  
+  class DataQualityAssessment:
+      def __init__(self, quality_thresholds: Dict = None):
+          self.quality_thresholds = quality_thresholds or {
+              'missing_data_threshold': 0.05,  # 5% max missing
+              'bias_threshold': 0.1,  # 10% max demographic imbalance
+              'outlier_threshold': 0.02,  # 2% max outliers
+              'correlation_threshold': 0.9  # 90% max correlation
+          }
+          self.quality_history = []
+          
+      def comprehensive_quality_check(self, df: pd.DataFrame, 
+                                    protected_attributes: List[str] = None) -> Dict:
+          """Perform comprehensive data quality assessment"""
+          results = {
+              'timestamp': pd.Timestamp.now(),
+              'dataset_shape': df.shape,
+              'missing_data_analysis': self.analyze_missing_data(df),
+              'statistical_analysis': self.analyze_statistical_properties(df),
+              'bias_analysis': self.analyze_demographic_bias(df, protected_attributes),
+              'outlier_analysis': self.detect_outliers(df),
+              'correlation_analysis': self.analyze_correlations(df),
+              'overall_quality_score': 0
+          }
+          
+          # Calculate overall quality score
+          results['overall_quality_score'] = self.calculate_quality_score(results)
+          
+          # Generate recommendations
+          results['recommendations'] = self.generate_recommendations(results)
+          
+          return results
+          
+      def analyze_missing_data(self, df: pd.DataFrame) -> Dict:
+          """Comprehensive missing data analysis"""
+          missing_analysis = {
+              'total_missing': df.isnull().sum().sum(),
+              'missing_percentage': (df.isnull().sum() / len(df)) * 100,
+              'columns_with_missing': df.columns[df.isnull().any()].tolist(),
+              'patterns': self.detect_missing_patterns(df)
+          }
+          
+          # Check if missing data exceeds threshold
+          max_missing_pct = missing_analysis['missing_percentage'].max()
+          missing_analysis['quality_flag'] = max_missing_pct > (self.quality_thresholds['missing_data_threshold'] * 100)
+          
+          return missing_analysis
+          
+      def analyze_demographic_bias(self, df: pd.DataFrame, 
+                                 protected_attributes: List[str]) -> Dict:
+          """Analyze demographic representation and bias"""
+          if not protected_attributes:
+              return {'status': 'No protected attributes specified'}
+              
+          bias_analysis = {}
+          
+          for attribute in protected_attributes:
+              if attribute in df.columns:
+                  value_counts = df[attribute].value_counts(normalize=True)
+                  
+                  # Calculate demographic parity
+                  max_representation = value_counts.max()
+                  min_representation = value_counts.min()
+                  parity_ratio = min_representation / max_representation if max_representation > 0 else 0
+                  
+                  bias_analysis[attribute] = {
+                      'distribution': value_counts.to_dict(),
+                      'parity_ratio': parity_ratio,
+                      'bias_detected': parity_ratio < (1 - self.quality_thresholds['bias_threshold']),
+                      'underrepresented_groups': value_counts[value_counts < 0.1].index.tolist()
+                  }
+          
+          return bias_analysis
 
-compliance_mappings:
-  nist_ai_rmf: "GOVERN-1.1"
-  iso_27001: "A.12.6.1"
+testing:
+  validation_tests:
+    - "Test missing data detection with synthetic datasets"
+    - "Validate bias detection across multiple demographic groups"
+    - "Verify outlier detection accuracy with known anomalies"
+    - "Test statistical analysis with various distribution types"
+  
+  performance_tests:
+    - "Benchmark analysis speed on large datasets"
+    - "Test memory usage with high-dimensional data"
+    - "Measure scalability across different dataset sizes"
+
+compliance_mapping:
+  NIST_AI_RMF:
+    - "MAP-2.3: Data quality and representativeness"
+    - "MEASURE-1.1: Appropriate methodologies and metrics"
+  ISO27001:
+    - "A.12.7.1: Control of operational software"
+  EU_AI_Act:
+    - "Article 10: Data and data governance"
+  GDPR:
+    - "Article 5: Principles relating to processing"
+
+maturity_levels:
+  level_1: "Manual data quality checks"
+  level_2: "Automated missing data analysis"
+  level_3: "Comprehensive bias detection"
+  level_4: "Real-time quality monitoring"
+  level_5: "Predictive quality assessment"
+
+metrics:
+  success_criteria:
+    - "Data quality score >85% for all datasets"
+    - "Bias detection accuracy >90%"
+    - "Automated quality reporting"
+  kpis:
+    - "Missing data detection rate: 100%"
+    - "Bias identification precision: >95%"
+    - "Quality assessment time: <10 minutes"

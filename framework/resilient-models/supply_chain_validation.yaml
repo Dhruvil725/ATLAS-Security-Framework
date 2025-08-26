@@ -1,0 +1,34 @@
+# RM-004: Pretrained Model & Supply Chain Validation
+control_id: "RM-004"
+control_name: "Pretrained Model and Supply-Chain Validation"
+pillar: "Resilient Models"
+status: "draft"
+
+description: >
+  Validate third-party models, data, and dependencies before use to prevent
+  introduction of vulnerabilities or backdoors through the model supply chain.
+
+what:
+  - "Verify provenance and signature of pretrained models."
+  - "Scan dependent libraries and model artifacts for known vulnerabilities."
+  - "Validate model behavior against a safety test suite."
+
+how:
+  - "Require signed model artifacts; verify signatures before load."
+  - "Run dependency vulnerability scanners on repackaged artifacts."
+  - "Execute a small behavior test suite covering edge-cases and sensitive inputs."
+
+code_example: |
+  # Example: check model artifact signature (pseudo)
+  def verify_model_artifact(artifact_path, trusted_public_key):
+      signature = read_signature(artifact_path)
+      return verify_signature(artifact_path, signature, trusted_public_key)
+
+compliance_mappings:
+  - NIST_AI_RMF: "PROTECT-2.2"
+  - ISO_27001: "A.14.1.3"
+
+metrics:
+  - "Percent of third-party models validated"
+  - "Number of vulnerabilities found in model artifacts"
+  - "Time-to-block / quarantine suspect models"

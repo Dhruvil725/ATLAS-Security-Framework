@@ -4,21 +4,44 @@ control_name: "Adversarial Robustness Testing"
 pillar: "Resilient Models"
 status: "draft"
 
-description: "Test AI models against adversarial attacks and ensure robust performance"
+description: >
+  Systematic testing of models against a range of adversarial inputs and
+  environmental/semantic manipulations to measure resilience and inform mitigations.
 
-implementation:
-  - "Generate adversarial examples"
-  - "Test model robustness"
-  - "Implement defensive techniques"
+what:
+  - "Measure model performance against adversarially-perturbed inputs and semantic changes."
+  - "Use results to prioritize defensive controls and retraining."
+
+how:
+  - "Define adversarial threat model (access level, attack goals, budgets)."
+  - "Run a representative set of attacks in a controlled environment (black-box and white-box as available)."
+  - "Measure degradation with agreed KPIs (robustness score, worst-case accuracy)."
+  - "Apply defenses (adversarial training, input preprocessing) and re-evaluate."
 
 code_example: |
-  ```python
-  def test_adversarial_robustness(model, test_data):
-      adversarial_examples = generate_adversarial_examples(test_data)
-      robustness_score = evaluate_model_performance(model, adversarial_examples)
-      return robustness_score > 0.8  # 80% threshold
-  ```
+  # Example (non-actionable): illustrate test flow, not attack generation internals
+  def evaluate_robustness(model, test_dataset, adversary_tool):
+      # adversary_tool is a test harness that creates test cases in a safe lab
+      adv_examples = adversary_tool.create_examples(test_dataset)
+      baseline = model.evaluate(test_dataset)
+      adv_score = model.evaluate(adv_examples)
+      robustness = adv_score / baseline if baseline else 0
+      return {"baseline": baseline, "adv_score": adv_score, "robustness_ratio": robustness}
 
 compliance_mappings:
-  nist_ai_rmf: "MEASURE-2.3"
-  iso_27001: "A.14.2.5"
+  - NIST_AI_RMF: "MEASURE-2.3"
+  - ISO_27001: "A.14.2.5"
+  - EU_AI_Act: "Article 15"
+
+metrics:
+  - "Baseline accuracy"
+  - "Adversarial accuracy"
+  - "Robustness ratio (adv / baseline)"
+  - "Time-to-mitigate (hours)"
+
+maturity_levels:
+  1: "Ad hoc testing (manual, one-off)"
+  2: "Repeatable tests; basic automation"
+  3: "Integrated into CI; regression tracking"
+  4: "Automated adversarial simulation and alerting"
+  5: "Continuous adversarial red-teaming and formal guarantees"

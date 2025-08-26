@@ -1,16 +1,51 @@
-# RM-002: Model Theft Protection
+# RM-002: Model IP & Extraction Protection
 control_id: "RM-002"
-control_name: "AI Model Theft Protection"
+control_name: "Model IP Protection and Extraction Detection"
 pillar: "Resilient Models"
 status: "draft"
 
-description: "Protect AI models from extraction, stealing, and unauthorized replication"
+description: >
+  Protect models from extraction, over-querying, and unauthorized replication.
+  Detect suspicious query patterns and enforce access controls.
 
-implementation:
-  - "Model watermarking techniques"
-  - "Query rate limiting"
-  - "Behavioral monitoring"
+what:
+  - "Prevent bulk extraction by rate limiting, access controls, and query cost."
+  - "Detect likely extraction behavior via query pattern analysis."
+  - "Embed ownership signals (watermarking/fingerprinting) to prove IP."
+
+how:
+  - "Enforce authentication and per-client authorization for model APIs."
+  - "Apply rate limiting, per-user quotas and anomaly detection on query patterns."
+  - "Use lightweight model watermarking or fingerprinting and log model outputs for provenance."
+  - "Log and monitor unusual export/download attempts and large-scale model scoring."
+
+code_example: |
+  # Example: detect bursty query patterns (simple heuristic)
+  from collections import deque, defaultdict
+  import time
+
+  client_history = defaultdict(lambda: deque(maxlen=100))
+
+  def record_query(client_id):
+      now = time.time()
+      client_history[client_id].append(now)
+      # simple burst detection: >20 queries in last 60 seconds
+      window = [t for t in client_history[client_id] if now - t <= 60]
+      if len(window) > 20:
+          alert_security_team(f"High query rate from {client_id}")
 
 compliance_mappings:
-  nist_ai_rmf: "PROTECT-1.1"
-  iso_27001: "A.13.2.1"
+  - NIST_AI_RMF: "PROTECT-1.1"
+  - ISO_27001: "A.13.2.1"
+
+metrics:
+  - "Number of detected extraction attempts per month"
+  - "False positive rate of extraction detection"
+  - "Time from detection to mitigation"
+
+maturity_levels:
+  1: "Basic auth + static rate limits"
+  2: "Per-client quotas + simple anomaly detection"
+  3: "Behavioral analytics + watermarking signals"
+  4: "Automated throttling + active deception (honeypots)"
+  5: "Comprehensive telemetry + legal/forensic readiness"

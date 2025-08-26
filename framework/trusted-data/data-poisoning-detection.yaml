@@ -1,16 +1,194 @@
-# TD-002: Data Poisoning Detection
-control_id: "TD-002"
-control_name: "Training Data Poisoning Detection"
+control_id: "TD-03"
+control_name: "Multi-Vector Data Poisoning Detection"
 pillar: "Trusted Data"
-status: "draft"
+description: "Detect and mitigate sophisticated data poisoning attacks including label flipping, backdoor triggers, and statistical manipulation of training datasets."
+priority: "CRITICAL"
+version: "1.0"
+last_updated: "2025-01-26"
 
-description: "Detect malicious data injection in training datasets"
+threats_addressed:
+  - "Label flipping attacks corrupting ground truth"
+  - "Backdoor trigger injection for targeted attacks"
+  - "Statistical poisoning affecting model behavior"
+  - "Adversarial examples in training data"
+  - "Gradient-based poisoning attacks"
+  - "Clean-label poisoning attempts"
 
 implementation:
-  - "Statistical distribution analysis"
-  - "Outlier detection algorithms"
-  - "Data source verification"
+  what: "Deploy comprehensive multi-layered poisoning detection system"
+  how:
+    - "Implement statistical anomaly detection for distribution shifts"
+    - "Deploy spectral signature analysis for backdoor detection"
+    - "Use activation clustering to identify poisoned samples"
+    - "Apply gradient-based detection methods"
+    - "Implement ensemble detection techniques"
+  
+  detection_methods:
+    - "Statistical distribution analysis using KL-divergence"
+    - "Spectral signature detection for backdoor patterns"
+    - "Activation clustering for anomalous samples"
+    - "Gradient norm analysis for poisoned examples"
+    - "Cross-validation consistency checking"
+  
+  prevention_techniques:
+    - "Data sanitization pipelines"
+    - "Robust aggregation methods"
+    - "Differential privacy in data collection"
+    - "Byzantine-fault tolerant training"
+    - "Certified defenses against poisoning"
 
-compliance_mappings:
-  nist_ai_rmf: "MAP-2.3"
-  iso_27001: "A.12.2.1"
+code_example: |
+  import numpy as np
+  import pandas as pd
+  from sklearn.ensemble import IsolationForest
+  from sklearn.decomposition import PCA
+  from sklearn.cluster import DBSCAN
+  from scipy import stats
+  from typing import Dict, List, Tuple, Optional
+  
+  class DataPoisoningDetector:
+      def __init__(self, contamination_rate: float = 0.1, sensitivity: float = 0.95):
+          self.contamination_rate = contamination_rate
+          self.sensitivity = sensitivity
+          self.detection_history = []
+          self.baseline_statistics = {}
+          
+      def comprehensive_poisoning_scan(self, X: np.ndarray, y: np.ndarray) -> Dict:
+          """Comprehensive multi-vector poisoning detection"""
+          results = {
+              'timestamp': pd.Timestamp.now(),
+              'dataset_size': X.shape[0],
+              'label_flip_analysis': self.detect_label_flips(X, y),
+              'backdoor_analysis': self.detect_backdoor_triggers(X, y),
+              'statistical_analysis': self.detect_statistical_poisoning(X, y),
+              'spectral_analysis': self.detect_spectral_signatures(X),
+              'ensemble_verdict': None,
+              'confidence_score': 0,
+              'suspicious_indices': []
+          }
+          
+          # Combine detection methods for ensemble verdict
+          results['ensemble_verdict'] = self.ensemble_detection(results)
+          results['confidence_score'] = self.calculate_confidence(results)
+          results['suspicious_indices'] = self.extract_suspicious_samples(results)
+          
+          return results
+          
+      def detect_label_flips(self, X: np.ndarray, y: np.ndarray) -> Dict:
+          """Detect systematic label flipping attacks"""
+          label_analysis = {
+              'method': 'statistical_label_analysis',
+              'suspicious_samples': [],
+              'flip_indicators': {}
+          }
+          
+          # Analyze label consistency with feature patterns
+          unique_labels = np.unique(y)
+          
+          for label in unique_labels:
+              label_mask = (y == label)
+              label_features = X[label_mask]
+              
+              # Use isolation forest to find outliers within each class
+              iso_forest = IsolationForest(
+                  contamination=self.contamination_rate,
+                  random_state=42
+              )
+              outlier_predictions = iso_forest.fit_predict(label_features)
+              
+              # Find indices of outliers
+              outlier_indices = np.where(label_mask)[0][outlier_predictions == -1]
+              
+              label_analysis['flip_indicators'][label] = {
+                  'outlier_count': len(outlier_indices),
+                  'outlier_percentage': len(outlier_indices) / np.sum(label_mask) * 100,
+                  'outlier_indices': outlier_indices.tolist()
+              }
+              
+              label_analysis['suspicious_samples'].extend(outlier_indices.tolist())
+          
+          return label_analysis
+          
+      def detect_backdoor_triggers(self, X: np.ndarray, y: np.ndarray) -> Dict:
+          """Detect backdoor trigger patterns using spectral analysis"""
+          backdoor_analysis = {
+              'method': 'spectral_signature_analysis',
+              'trigger_detected': False,
+              'trigger_pattern': None,
+              'affected_samples': []
+          }
+          
+          try:
+              # Apply PCA for dimensionality reduction
+              pca = PCA(n_components=min(50, X.shape[1]))
+              X_reduced = pca.fit_transform(X)
+              
+              # Compute covariance matrix and eigendecomposition
+              cov_matrix = np.cov(X_reduced.T)
+              eigenvalues, eigenvectors = np.linalg.eigh(cov_matrix)
+              
+              # Look for anomalous eigenvalue patterns (backdoor signature)
+              eigenvalue_ratios = eigenvalues[:-1] / eigenvalues[1:]
+              anomalous_ratios = eigenvalue_ratios > np.percentile(eigenvalue_ratios, 95)
+              
+              if np.any(anomalous_ratios):
+                  backdoor_analysis['trigger_detected'] = True
+                  
+                  # Identify samples most aligned with suspicious eigenvectors
+                  suspicious_eigenvector = eigenvectors[:, np.argmax(anomalous_ratios)]
+                  projections = X_reduced @ suspicious_eigenvector
+                  
+                  # Find samples with highest projections (potential backdoor samples)
+                  threshold = np.percentile(np.abs(projections), 95)
+                  backdoor_indices = np.where(np.abs(projections) > threshold)[0]
+                  
+                  backdoor_analysis['affected_samples'] = backdoor_indices.tolist()
+                  backdoor_analysis['trigger_pattern'] = {
+                      'eigenvector': suspicious_eigenvector.tolist(),
+                      'strength': float(np.max(anomalous_ratios))
+                  }
+          
+          except Exception as e:
+              backdoor_analysis['error'] = str(e)
+          
+          return backdoor_analysis
+
+testing:
+  validation_tests:
+    - "Test label flip detection with synthetic poisoned datasets"
+    - "Validate backdoor detection against known trigger patterns"
+    - "Verify statistical anomaly detection accuracy"
+    - "Test ensemble detection with multiple attack vectors"
+  
+  performance_tests:
+    - "Benchmark detection speed on large datasets"
+    - "Measure memory usage during spectral analysis"
+    - "Test scalability with high-dimensional data"
+
+compliance_mapping:
+  NIST_AI_RMF:
+    - "MAP-2.2: Data quality and integrity validation"
+    - "MEASURE-2.7: AI system performance monitoring"
+  ISO27001:
+    - "A.14.2.5: Secure system engineering principles"
+  EU_AI_Act:
+    - "Article 15: Accuracy, robustness and cybersecurity"
+  SOC2:
+    - "CC7.1: System monitoring controls"
+
+maturity_levels:
+  level_1: "Basic outlier detection"
+  level_2: "Statistical anomaly detection"
+  level_3: "Multi-vector poisoning detection"
+  level_4: "Ensemble detection methods"
+  level_5: "Real-time poisoning prevention"
+
+metrics:
+  success_criteria:
+    - "Poisoning detection accuracy >95%"
+    - "False positive rate <2%"
+    - "Real-time detection capability"
+  kpis:
+    - "Label flip detection rate: >90%"
+    - "Backdoor trigger detection rate: >85%"
+    - "Statistical anomaly detection precision: >93%"

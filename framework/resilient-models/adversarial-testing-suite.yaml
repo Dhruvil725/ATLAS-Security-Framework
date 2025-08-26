@@ -1,0 +1,424 @@
+control_id: RM-01
+control_name: Multi-Vector Adversarial Testing Suite
+pillar: Resilient Models
+description: Comprehensive systematic testing framework against all major adversarial attack vectors including FGSM, PGD, C&W, and transfer attacks with automated robustness certification and defense validation
+
+threats_addressed:
+  - FGSM (Fast Gradient Sign Method) adversarial examples
+  - PGD (Projected Gradient Descent) iterative attacks  
+  - C&W (Carlini & Wagner) optimization-based attacks
+  - Transfer attacks from surrogate models
+  - Black-box boundary attacks
+  - Universal adversarial perturbations
+  - Semantic adversarial examples
+  - Physical world adversarial attacks
+  - Backdoor trigger activation
+  - Data poisoning through adversarial samples
+  - Model extraction via adversarial queries
+  - Membership inference attacks
+  - Model inversion attacks
+  - Gradient-based model stealing
+  - Evasion attacks on defense mechanisms
+  - Adaptive attacks against certified defenses
+  - Multi-step adversarial sequences
+  - Ensemble attack coordination
+  - Feature space adversarial manipulation
+  - Decision boundary exploitation attacks
+
+implementation:
+  detection:
+    - Statistical anomaly detection in input distributions
+    - Adversarial example detection using neural networks
+    - Input preprocessing and transformation defenses
+    - Ensemble-based detection with voting mechanisms
+    - Reconstruction-based detection methods
+    - Mahalanobis distance-based detection
+    - Local intrinsic dimensionality analysis
+    - Kernel density estimation for outlier detection
+  
+  prevention:
+    - Adversarial training with diverse attack methods
+    - Certified defense mechanisms (randomized smoothing)
+    - Input transformations (JPEG compression, bit-depth reduction)
+    - Feature squeezing and spatial smoothing
+    - Defensive distillation techniques
+    - Gradient masking and obfuscation
+    - Ensemble diversity maximization
+    - Robust optimization during training
+  
+  testing:
+    - Automated adversarial test case generation
+    - Attack success rate measurement across threat models
+    - Robustness certification with provable bounds
+    - Cross-architecture transfer attack evaluation
+    - Adaptive attack resistance testing
+    - Real-world physical attack simulation
+    - Performance impact assessment of defenses
+    - Scalability testing for large-scale deployments
+
+monitoring:
+  - Real-time adversarial attack detection
+  - Model performance degradation alerts  
+  - Attack pattern recognition and classification
+  - Defense effectiveness tracking
+  - False positive/negative rate monitoring
+  - Computational overhead measurement
+  - Attack sophistication trend analysis
+  - Threat landscape evolution tracking
+
+code_example: |
+  import torch
+  import torch.nn as nn
+  import torch.nn.functional as F
+  import numpy as np
+  from art.attacks.evasion import FastGradientMethod, ProjectedGradientDescent, CarliniL2Method
+  from art.estimators.classification import PyTorchClassifier
+  from art.defences.preprocessor import GaussianNoise, JpegCompression
+  from sklearn.metrics import accuracy_score, classification_report
+  import logging
+  from typing import Dict, List, Tuple, Optional
+  import json
+  from datetime import datetime
+  
+  class AdversarialTestingSuite:
+      """
+      Comprehensive adversarial testing suite for ML model robustness evaluation.
+      Implements multiple attack vectors and defense mechanisms with detailed reporting.
+      """
+      
+      def __init__(self, model: nn.Module, input_shape: Tuple, nb_classes: int, device: str = 'cpu'):
+          self.model = model.to(device)
+          self.device = device
+          self.input_shape = input_shape
+          self.nb_classes = nb_classes
+          
+          # Initialize ART classifier wrapper
+          self.classifier = PyTorchClassifier(
+              model=model,
+              loss=nn.CrossEntropyLoss(),
+              input_shape=input_shape,
+              nb_classes=nb_classes,
+              device_type='gpu' if 'cuda' in device else 'cpu'
+          )
+          
+          # Initialize attacks
+          self.attacks = self._initialize_attacks()
+          
+          # Initialize defenses
+          self.defenses = self._initialize_defenses()
+          
+          # Setup logging
+          logging.basicConfig(level=logging.INFO)
+          self.logger = logging.getLogger(__name__)
+          
+      def _initialize_attacks(self) -> Dict:
+          """Initialize various adversarial attacks"""
+          attacks = {}
+          
+          # FGSM variants
+          for eps in [0.05, 0.1, 0.15, 0.2, 0.3]:
+              attacks[f'fgsm_eps_{eps}'] = FastGradientMethod(
+                  estimator=self.classifier,
+                  eps=eps,
+                  targeted=False
+              )
+              
+          # PGD variants  
+          for eps in [0.05, 0.1, 0.15, 0.2]:
+              attacks[f'pgd_eps_{eps}'] = ProjectedGradientDescent(
+                  estimator=self.classifier,
+                  eps=eps,
+                  max_iter=40,
+                  targeted=False,
+                  random_eps=True
+              )
+              
+          # C&W attack
+          attacks['cw_l2'] = CarliniL2Method(
+              classifier=self.classifier,
+              confidence=0.0,
+              targeted=False,
+              max_iter=100
+          )
+          
+          return attacks
+          
+      def _initialize_defenses(self) -> Dict:
+          """Initialize defense mechanisms"""
+          defenses = {}
+          
+          # Preprocessing defenses
+          defenses['gaussian_noise'] = GaussianNoise(sigma=0.1, apply_fit=False, apply_predict=True)
+          defenses['jpeg_compression'] = JpegCompression(quality=50, apply_fit=False, apply_predict=True)
+          
+          return defenses
+          
+      def run_comprehensive_evaluation(self, x_test: np.ndarray, y_test: np.ndarray) -> Dict:
+          """Run comprehensive adversarial evaluation"""
+          results = {
+              'timestamp': datetime.now().isoformat(),
+              'test_samples': len(x_test),
+              'baseline_accuracy': self._evaluate_accuracy(x_test, y_test),
+              'attacks': {},
+              'defenses': {},
+              'robustness_metrics': {}
+          }
+          
+          self.logger.info(f"Starting comprehensive evaluation on {len(x_test)} samples")
+          
+          # Test each attack
+          for attack_name, attack in self.attacks.items():
+              try:
+                  attack_results = self._evaluate_attack(attack, x_test, y_test, attack_name)
+                  results['attacks'][attack_name] = attack_results
+                  self.logger.info(f"Completed {attack_name}: {attack_results['success_rate']:.2%} success rate")
+              except Exception as e:
+                  self.logger.error(f"Attack {attack_name} failed: {str(e)}")
+                  results['attacks'][attack_name] = {'error': str(e)}
+                  
+          # Test defenses
+          for defense_name, defense in self.defenses.items():
+              try:
+                  defense_results = self._evaluate_defense(defense, x_test, y_test, defense_name)
+                  results['defenses'][defense_name] = defense_results
+                  self.logger.info(f"Defense {defense_name}: {defense_results['accuracy']:.2%} accuracy")
+              except Exception as e:
+                  self.logger.error(f"Defense {defense_name} failed: {str(e)}")
+                  results['defenses'][defense_name] = {'error': str(e)}
+                  
+          # Calculate robustness metrics
+          results['robustness_metrics'] = self._calculate_robustness_metrics(results)
+          
+          return results
+          
+      def _evaluate_attack(self, attack, x_test: np.ndarray, y_test: np.ndarray, attack_name: str) -> Dict:
+          """Evaluate a specific attack"""
+          # Generate adversarial examples
+          x_adv = attack.generate(x=x_test)
+          
+          # Calculate metrics
+          clean_accuracy = self._evaluate_accuracy(x_test, y_test)
+          adv_accuracy = self._evaluate_accuracy(x_adv, y_test)
+          success_rate = 1 - (adv_accuracy / clean_accuracy) if clean_accuracy > 0 else 1
+          
+          # Calculate perturbation statistics
+          perturbation = np.abs(x_adv - x_test)
+          l0_norm = np.mean(np.sum(perturbation > 1e-6, axis=(1,2,3)))
+          l2_norm = np.mean(np.sqrt(np.sum(perturbation**2, axis=(1,2,3))))
+          linf_norm = np.mean(np.max(perturbation.reshape(len(x_test), -1), axis=1))
+          
+          return {
+              'clean_accuracy': float(clean_accuracy),
+              'adversarial_accuracy': float(adv_accuracy),
+              'success_rate': float(success_rate),
+              'perturbation_stats': {
+                  'l0_norm': float(l0_norm),
+                  'l2_norm': float(l2_norm),
+                  'linf_norm': float(linf_norm)
+              }
+          }
+          
+      def _evaluate_defense(self, defense, x_test: np.ndarray, y_test: np.ndarray, defense_name: str) -> Dict:
+          """Evaluate defense mechanism"""
+          # Apply defense preprocessing
+          x_defended, _ = defense(x_test, y_test)
+          
+          # Test accuracy with defense
+          defended_accuracy = self._evaluate_accuracy(x_defended, y_test)
+          
+          # Test defense against attacks
+          defense_vs_attacks = {}
+          for attack_name, attack in list(self.attacks.items())[:3]:  # Test against subset for efficiency
+              try:
+                  x_adv_defended = attack.generate(x=x_defended)
+                  adv_defended_accuracy = self._evaluate_accuracy(x_adv_defended, y_test)
+                  defense_vs_attacks[attack_name] = {
+                      'accuracy': float(adv_defended_accuracy),
+                      'improvement': float(adv_defended_accuracy - self._evaluate_accuracy(attack.generate(x=x_test), y_test))
+                  }
+              except Exception as e:
+                  defense_vs_attacks[attack_name] = {'error': str(e)}
+                  
+          return {
+              'accuracy': float(defended_accuracy),
+              'vs_attacks': defense_vs_attacks
+          }
+          
+      def _evaluate_accuracy(self, x: np.ndarray, y: np.ndarray) -> float:
+          """Calculate model accuracy"""
+          predictions = self.classifier.predict(x)
+          predicted_labels = np.argmax(predictions, axis=1)
+          true_labels = np.argmax(y, axis=1) if y.ndim > 1 else y
+          return accuracy_score(true_labels, predicted_labels)
+          
+      def _calculate_robustness_metrics(self, results: Dict) -> Dict:
+          """Calculate overall robustness metrics"""
+          attack_results = results.get('attacks', {})
+          if not attack_results:
+              return {}
+              
+          # Average success rates
+          success_rates = [r.get('success_rate', 0) for r in attack_results.values() if isinstance(r, dict) and 'success_rate' in r]
+          avg_success_rate = np.mean(success_rates) if success_rates else 0
+          
+          # Robustness score (1 - average success rate)
+          robustness_score = 1 - avg_success_rate
+          
+          # Perturbation efficiency
+          l2_norms = [r.get('perturbation_stats', {}).get('l2_norm', 0) for r in attack_results.values() if isinstance(r, dict)]
+          avg_l2_perturbation = np.mean(l2_norms) if l2_norms else 0
+          
+          return {
+              'overall_robustness_score': float(robustness_score),
+              'average_attack_success_rate': float(avg_success_rate),
+              'average_l2_perturbation': float(avg_l2_perturbation),
+              'tested_attacks': len([r for r in attack_results.values() if isinstance(r, dict) and 'success_rate' in r])
+          }
+          
+      def generate_detailed_report(self, results: Dict, output_file: Optional[str] = None) -> str:
+          """Generate detailed evaluation report"""
+          report = f"""
+  Adversarial Robustness Evaluation Report
+  ======================================
+  
+  Timestamp: {results['timestamp']}
+  Test Samples: {results['test_samples']}
+  Baseline Accuracy: {results['baseline_accuracy']:.2%}
+  
+  ROBUSTNESS SUMMARY
+  -----------------
+  Overall Robustness Score: {results['robustness_metrics'].get('overall_robustness_score', 0):.2%}
+  Average Attack Success Rate: {results['robustness_metrics'].get('average_attack_success_rate', 0):.2%}
+  Average L2 Perturbation: {results['robustness_metrics'].get('average_l2_perturbation', 0):.6f}
+  
+  ATTACK EVALUATION RESULTS
+  ------------------------
+  """
+          
+          for attack_name, attack_result in results.get('attacks', {}).items():
+              if isinstance(attack_result, dict) and 'success_rate' in attack_result:
+                  report += f"""
+  {attack_name.upper()}:
+    - Success Rate: {attack_result['success_rate']:.2%}
+    - Adversarial Accuracy: {attack_result['adversarial_accuracy']:.2%}
+    - L2 Perturbation: {attack_result['perturbation_stats']['l2_norm']:.6f}
+    - L∞ Perturbation: {attack_result['perturbation_stats']['linf_norm']:.6f}
+  """
+          
+          report += """
+  DEFENSE EVALUATION RESULTS
+  -------------------------
+  """
+          
+          for defense_name, defense_result in results.get('defenses', {}).items():
+              if isinstance(defense_result, dict) and 'accuracy' in defense_result:
+                  report += f"""
+  {defense_name.upper()}:
+    - Clean Accuracy: {defense_result['accuracy']:.2%}
+    - Performance vs Attacks: {len(defense_result['vs_attacks'])} tested
+  """
+          
+          if output_file:
+              with open(output_file, 'w') as f:
+                  f.write(report)
+                  f.write('\n\nDetailed Results JSON:\n')
+                  json.dump(results, f, indent=2)
+                  
+          return report
+          
+      def run_targeted_evaluation(self, attack_types: List[str], x_test: np.ndarray, y_test: np.ndarray) -> Dict:
+          """Run evaluation on specific attack types"""
+          targeted_results = {}
+          
+          for attack_type in attack_types:
+              if attack_type in self.attacks:
+                  attack_results = self._evaluate_attack(self.attacks[attack_type], x_test, y_test, attack_type)
+                  targeted_results[attack_type] = attack_results
+              else:
+                  self.logger.warning(f"Attack type {attack_type} not available")
+                  
+          return targeted_results
+
+testing:
+  unit_tests:
+    - Validate attack implementations match literature specifications
+    - Verify perturbation bounds are respected (L0, L2, L∞)
+    - Test attack success rate calculations
+    - Validate defense preprocessing functions
+    - Test accuracy measurement consistency
+    
+  integration_tests:  
+    - Test full evaluation pipeline with sample data
+    - Verify attack-defense interaction mechanisms
+    - Test cross-architecture model compatibility
+    - Validate report generation functionality
+    - Test error handling for failed attacks/defenses
+    
+  performance_tests:
+    - Measure computational overhead of each attack method
+    - Test memory usage with large batch sizes
+    - Benchmark attack generation speed
+    - Measure defense preprocessing latency
+    - Test scalability with different model sizes
+    
+  robustness_tests:
+    - Cross-validate results across multiple random seeds
+    - Test stability under different hyperparameter settings  
+    - Validate results against published benchmarks
+    - Test adaptive attack resistance
+    - Verify certified defense bounds
+
+compliance_mapping:
+  NIST_AI_RMF: 
+    - "MEASURE-2.7: AI system performance is systematically tracked"
+    - "GOVERN-1.4: The risk management process includes risk identification"
+    - "MAP-5.1: Likelihood and magnitude of each identified risk are assessed"
+  
+  ISO_27001_2022:
+    - "A.14.2.8: System security testing"  
+    - "A.12.6.1: Management of technical vulnerabilities"
+    - "A.8.31: Legal requirements for data protection and privacy"
+    
+  EU_AI_Act:
+    - "Article 15: Accuracy, robustness and cybersecurity"
+    - "Article 64: Market surveillance and control"
+    - "Annex IV: Technical documentation requirements"
+    
+  GDPR:
+    - "Article 25: Data protection by design and by default"
+    - "Article 32: Security of processing"
+    - "Article 35: Data protection impact assessment"
+    
+  SOC2_Type2:
+    - "CC6.1: Logical and physical access controls"
+    - "CC6.7: Data transmission and disposal"
+    - "CC7.2: System monitoring and anomaly detection"
+
+maturity_levels:
+  level_1_basic:
+    - "Implement basic FGSM and PGD attacks"
+    - "Measure attack success rates manually"
+    - "Document baseline model vulnerabilities"
+    
+  level_2_intermediate:
+    - "Automated testing against 5+ attack methods"  
+    - "Implement 2+ defense mechanisms"
+    - "Generate standardized robustness reports"
+    
+  level_3_advanced:
+    - "Continuous adversarial testing pipeline"
+    - "Adaptive attack resistance evaluation"
+    - "Integration with model development lifecycle"
+    
+  level_4_expert:
+    - "Custom attack development for specific threats"
+    - "Certified defense implementation and verification"  
+    - "Real-world physical attack simulation capabilities"
+
+validation_metrics:
+  - attack_success_rate_threshold: 0.15  # Maximum acceptable success rate
+  - clean_accuracy_degradation_limit: 0.05  # Maximum accuracy loss from defenses
+  - perturbation_budget_l2: 0.1  # L2 perturbation budget
+  - perturbation_budget_linf: 0.03  # L∞ perturbation budget
+  - evaluation_time_limit_minutes: 120  # Maximum evaluation time
+  - minimum_test_samples: 1000  # Minimum samples for statistical validity

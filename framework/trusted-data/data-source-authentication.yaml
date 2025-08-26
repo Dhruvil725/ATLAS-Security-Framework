@@ -1,0 +1,173 @@
+control_id: "TD-01"
+control_name: "Data Source Verification and Provenance Tracking"
+pillar: "Trusted Data"
+description: "Verify the authenticity and track the complete lineage of training data to prevent supply chain attacks and ensure data integrity."
+priority: "CRITICAL"
+version: "1.0"
+last_updated: "2025-01-26"
+
+threats_addressed:
+  - "Data poisoning through compromised sources"
+  - "Supply chain attacks on datasets"
+  - "Unverified third-party data usage"
+  - "Data tampering during transit"
+  - "Insider threats in data collection"
+
+implementation:
+  what: "Establish cryptographic verification and complete lineage tracking for all training data"
+  how:
+    - "Require digital signatures for all datasets from trusted Certificate Authorities"
+    - "Implement blockchain-based provenance tracking for immutable audit trails"
+    - "Maintain comprehensive chain of custody documentation"
+    - "Score and validate third-party data vendors using reputation systems"
+    - "Use cryptographic hashing for tamper detection"
+  
+  detection_methods:
+    - "Digital signature verification using RSA/ECDSA cryptography"
+    - "Hash-based integrity checking (SHA-256/SHA-3)"
+    - "Source reputation scoring and anomaly detection"
+    - "Automated lineage gap detection"
+    - "Vendor security assessment scoring"
+  
+  prevention_techniques:
+    - "Cryptographic data signing at collection point"
+    - "Multi-party computation for sensitive data verification"
+    - "Zero-trust architecture for data access"
+    - "Automated vendor security validation"
+    - "Immutable audit logs using distributed ledger technology"
+
+code_example: |
+  import hashlib
+  import json
+  from datetime import datetime
+  from cryptography.hazmat.primitives import hashes, serialization
+  from cryptography.hazmat.primitives.asymmetric import rsa, padding
+  from cryptography.exceptions import InvalidSignature
+  
+  class DataSourceAuthenticator:
+      def __init__(self, trusted_ca_path="trusted_cas.json"):
+          self.trusted_sources = self.load_trusted_cas(trusted_ca_path)
+          self.lineage_chain = []
+          
+      def verify_dataset_signature(self, dataset_path, signature_path, public_key_path):
+          """Verify dataset digital signature against trusted CA"""
+          try:
+              # Load public key
+              with open(public_key_path, 'rb') as key_file:
+                  public_key = serialization.load_pem_public_key(key_file.read())
+              
+              # Calculate dataset hash
+              with open(dataset_path, 'rb') as f:
+                  data_hash = hashlib.sha256(f.read()).digest()
+              
+              # Load and verify signature
+              with open(signature_path, 'rb') as sig_file:
+                  signature = sig_file.read()
+              
+              public_key.verify(
+                  signature,
+                  data_hash,
+                  padding.PSS(
+                      mgf=padding.MGF1(hashes.SHA256()),
+                      salt_length=padding.PSS.MAX_LENGTH
+                  ),
+                  hashes.SHA256()
+              )
+              
+              return {
+                  'verified': True,
+                  'hash': data_hash.hex(),
+                  'timestamp': datetime.now().isoformat()
+              }
+              
+          except InvalidSignature:
+              return {'verified': False, 'error': 'Invalid signature'}
+          except Exception as e:
+              return {'verified': False, 'error': str(e)}
+              
+      def create_lineage_record(self, dataset_id, source_info, processing_steps):
+          """Create immutable lineage record"""
+          lineage_record = {
+              'dataset_id': dataset_id,
+              'timestamp': datetime.now().isoformat(),
+              'source': {
+                  'vendor': source_info['vendor'],
+                  'collection_method': source_info['method'],
+                  'location': source_info['location'],
+                  'collector_id': source_info['collector']
+              },
+              'processing_steps': processing_steps,
+              'integrity': {
+                  'hash_sha256': self.calculate_dataset_hash(dataset_id),
+                  'size_bytes': self.get_dataset_size(dataset_id),
+                  'record_count': self.get_record_count(dataset_id)
+              },
+              'verification': {
+                  'signature_verified': True,
+                  'ca_verified': True,
+                  'reputation_score': self.get_vendor_reputation(source_info['vendor'])
+              }
+          }
+          
+          # Add to blockchain/immutable store
+          self.store_lineage_record(lineage_record)
+          return lineage_record
+          
+      def validate_vendor_reputation(self, vendor_id):
+          """Score vendor reputation based on historical data"""
+          vendor_data = self.get_vendor_history(vendor_id)
+          
+          reputation_score = 0
+          reputation_score += vendor_data.get('security_certifications', 0) * 20
+          reputation_score += vendor_data.get('data_quality_score', 0) * 15
+          reputation_score += vendor_data.get('incident_free_months', 0) * 2
+          reputation_score -= vendor_data.get('security_incidents', 0) * 25
+          
+          return max(0, min(100, reputation_score))  # 0-100 scale
+
+testing:
+  validation_tests:
+    - "Verify signature validation with corrupted datasets"
+    - "Test lineage tracking across multiple processing steps"
+    - "Validate source reputation scoring accuracy"
+    - "Test hash integrity with various file modifications"
+    - "Verify vendor validation with known bad actors"
+  
+  performance_tests:
+    - "Measure signature verification time for large datasets"
+    - "Test scalability of lineage tracking system"
+    - "Benchmark reputation scoring algorithms"
+
+compliance_mapping:
+  NIST_AI_RMF: 
+    - "GOVERN-1.1: Establish AI governance structure"
+    - "MAP-1.5: Data quality and integrity"
+  ISO27001: 
+    - "A.12.6.1: Management of technical vulnerabilities"
+    - "A.8.3.1: Management of removable media"
+  EU_AI_Act: 
+    - "Article 15: Accuracy, robustness and cybersecurity"
+  GDPR:
+    - "Article 25: Data protection by design and by default"
+  SOC2:
+    - "CC6.1: Logical and physical access controls"
+
+maturity_levels:
+  level_1: "Basic hash verification"
+  level_2: "Digital signature validation"
+  level_3: "Comprehensive lineage tracking" 
+  level_4: "Automated vendor reputation scoring"
+  level_5: "Blockchain-based immutable provenance"
+
+metrics:
+  success_criteria:
+    - "100% of datasets have verified signatures"
+    - "Complete lineage tracking for all data sources"
+    - "Zero tolerance for unverified vendor data"
+    - "Automated detection of integrity violations"
+  
+  kpis:
+    - "Signature verification success rate: >99.9%"
+    - "Lineage gap detection accuracy: >95%"
+    - "Vendor reputation scoring precision: >90%"
+    - "Mean time to detect tampering: <5 minutes"
